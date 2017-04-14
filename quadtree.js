@@ -38,8 +38,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 	  * @param Integer max_levels		(optional) total max levels inside root Quadtree (default: 4) 
 	  * @param Integer level		(optional) deepth level, required for subnodes  
 	  */
-	function Quadtree( bounds, max_objects, max_levels, level ) {
-		
+	function Quadtree( bounds, max_objects, max_levels, level, coordinateDeriver, sizeDeriver ) {
+	    this.coordinateDeriver = coordinateDeriver ? coordinateDeriver : function(entity) { return {x: entity.x, y: entity.y};};	
+	    this.sizeDeriver = sizeDeriver ? sizeDeriver : function(entity) { return {width: entity.width, height: entity.height};};	
 		this.max_objects	= max_objects || 10;
 		this.max_levels		= max_levels || 4;
 		
@@ -108,13 +109,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			horizontalMidpoint 	= this.bounds.y + (this.bounds.height / 2),
 	 
 			//pRect can completely fit within the top quadrants
-			topQuadrant = (pRect.y < horizontalMidpoint && pRect.y + pRect.height < horizontalMidpoint),
+			topQuadrant = (this.coordinateDeriver(pRect).y < horizontalMidpoint && this.coordinateDeriver(pRect).y + this.sizeDeriver(pRect).height < horizontalMidpoint),
 			
 			//pRect can completely fit within the bottom quadrants
-			bottomQuadrant = (pRect.y > horizontalMidpoint);
+			bottomQuadrant = (this.coordinateDeriver(pRect).y > horizontalMidpoint);
 		 
 		//pRect can completely fit within the left quadrants
-		if( pRect.x < verticalMidpoint && pRect.x + pRect.width < verticalMidpoint ) {
+		if( this.coordinateDeriver(pRect).x < verticalMidpoint && this.coordinateDeriver(pRect).x + this.sizeDeriver(pRect).width < verticalMidpoint ) {
 			if( topQuadrant ) {
 				index = 1;
 			} else if( bottomQuadrant ) {
@@ -122,7 +123,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 			}
 			
 		//pRect can completely fit within the right quadrants	
-		} else if( pRect.x > verticalMidpoint ) {
+		} else if( this.coordinateDeriver(pRect).x > verticalMidpoint ) {
 			if( topQuadrant ) {
 				index = 0;
 			} else if( bottomQuadrant ) {
